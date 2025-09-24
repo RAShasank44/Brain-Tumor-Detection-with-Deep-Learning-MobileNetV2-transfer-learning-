@@ -21,7 +21,7 @@ def load_brain_tumor_model():
         model = tf.keras.models.load_model("brain_tumor_model.keras")
     except:
         model = tf.keras.models.load_model(
-            "brain_tumor_model.h5",
+            "brain_tumor_model.keras",
             custom_objects={"MobileNetV2": MobileNetV2}
         )
     return model
