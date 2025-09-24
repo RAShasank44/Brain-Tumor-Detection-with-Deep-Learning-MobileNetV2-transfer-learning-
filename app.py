@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications import MobileNetV2
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import pickle
@@ -13,17 +12,11 @@ st.title("🧠 Brain Tumor Detection App")
 st.write("Upload an MRI image and get the tumor prediction instantly 💕")
 
 # -------------------------
-# Load model safely
+# Load model safely (Functional API model)
 # -------------------------
 @st.cache_resource
 def load_brain_tumor_model():
-    try:
-        model = tf.keras.models.load_model("brain_tumor_model.keras")
-    except:
-        model = tf.keras.models.load_model(
-            "brain_tumor_model.keras",
-            custom_objects={"MobileNetV2": MobileNetV2}
-        )
+    model = tf.keras.models.load_model("brain_tumor_model1.keras")
     return model
 
 model = load_brain_tumor_model()
@@ -32,7 +25,7 @@ model = load_brain_tumor_model()
 labels = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
 
 # -------------------------
-# File uploader for MRI
+# File uploader
 # -------------------------
 uploaded_file = st.file_uploader("Choose an MRI image...", type=["jpg","jpeg","png"])
 
@@ -53,9 +46,9 @@ if uploaded_file is not None:
     st.write(f"Confidence: {confidence:.2f}%")
 
 # -------------------------
-# Show training metrics (if history available)
+# Show training metrics (if available)
 # -------------------------
-metrics_file = "history.pkl"  # save your training history during training
+metrics_file = "history.pkl"
 
 if os.path.exists(metrics_file):
     with open(metrics_file,"rb") as f:
@@ -64,9 +57,8 @@ if os.path.exists(metrics_file):
     show_metrics = st.checkbox("Show training metrics & confusion matrix")
     
     if show_metrics:
-        # Accuracy & Loss plots
+        # Accuracy & Loss
         fig, ax = plt.subplots(1,2, figsize=(12,4))
-        
         ax[0].plot(history_dict['accuracy'], label='train_acc')
         ax[0].plot(history_dict['val_accuracy'], label='val_acc')
         ax[0].set_title('Accuracy')
@@ -84,7 +76,7 @@ if os.path.exists(metrics_file):
         st.subheader("Training Accuracy & Loss")
         st.pyplot(fig)
         
-        # Confusion matrix
+        # Confusion matrix (optional)
         if os.path.exists("y_true.npy") and os.path.exists("y_pred.npy"):
             y_true = np.load("y_true.npy")
             y_pred = np.load("y_pred.npy")
